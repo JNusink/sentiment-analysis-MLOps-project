@@ -6,10 +6,10 @@ VOLUME_NAME = sentiment_logs
 all: build run
 
 build:
-	@echo "Building FastAPI service..."
-	docker build -t sentiment-api ./api
-	@echo "Building Streamlit dashboard..."
-	docker build -t sentiment-dashboard ./monitoring
+    @echo "Building FastAPI service..."
+    docker build -t sentiment-api ./api
+    @echo "Building Streamlit dashboard..."
+    docker build -t sentiment-dashboard -f monitoring/Dockerfile .
 
 run:
 	@echo "Creating Docker network and volume..."

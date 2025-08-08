@@ -1,0 +1,22 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Runtime-generated files
+logs/prediction_logs.json
+
+# Large files
+logs/IMDB Dataset.csv
+api/sentiment_model.pkl
+
+# Virtual environment
+.venv/
+
+# IDE and editor files
+.vscode/
+*.code-workspace
+
+# System and temporary files
+*.log
+*.tmp
+.DS_Store
