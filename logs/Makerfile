@@ -1,0 +1,29 @@
+NETWORK_NAME = sentiment_network
+VOLUME_NAME = sentiment_logs
+
+.PHONY: all build run clean
+
+all: build run
+
+build:
+	@echo "Building FastAPI service..."
+	docker build -t sentiment-api ./api
+	@echo "Building Streamlit dashboard..."
+	docker build -t sentiment-dashboard ./monitoring
+
+run:
+	@echo "Creating Docker network and volume..."
+	-docker network create $(NETWORK_NAME)
+	-docker volume create $(VOLUME_NAME)
+	@echo "Starting FastAPI service..."
+	docker run -d --name api --network $(NETWORK_NAME) -v $(VOLUME_NAME):/logs -p 8000:8000 sentiment-api
+	@echo "Starting Streamlit dashboard..."
+	docker run -d --name dashboard --network $(NETWORK_NAME) -v $(VOLUME_NAME):/logs -p 8501:8501 sentiment-dashboard
+
+clean:
+	@echo "Stopping and removing containers..."
+	-docker stop api dashboard
+	-docker rm api dashboard
+	@echo "Removing network and volume..."
+	-docker network rm $(NETWORK_NAME)
+	-docker volume rm $(VOLUME_NAME)
