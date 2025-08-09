@@ -4,23 +4,23 @@ This project implements a multi-container MLOps application for sentiment analys
 
 ## System Architecture
 
-- **FastAPI Prediction Service**: Serves sentiment predictions at `POST /predict`, logging requests to `/logs/prediction_logs.json`.
-- **Streamlit Monitoring Dashboard**: Visualizes data drift, target drift, and model performance, reading from the shared log file.
+- **FastAPI Prediction Service**: Serves sentiment predictions at `POST /predict`, logging requests to `/logs/prediction_logs.json`. Uses a fallback SVC model due to compatibility issues with the original `sentiment_model.pkl`.
+- **Streamlit Monitoring Dashboard**: Visualizes data drift, target drift, and model performance (accuracy and precision) using `IMDB Dataset.csv` and logged predictions, with an alert if accuracy < 80%.
 - **Docker Volume**: Persists and shares `prediction_logs.json` and `IMDB Dataset.csv` between containers.
-- **Evaluation Script**: Tests the API using `test.json` and computes accuracy.
+- **Evaluation Script**: Tests the API using `test.json` and computes accuracy against the dataset.
 
 ## Prerequisites
 
 - Docker
 - Make
-- Python 3.9+ (for running evaluate.py locally)
+- Python 3.11 (for running evaluate.py locally, updated from 3.9+ due to container environment)
 - `test.json`, `IMDB Dataset.csv`, and `sentiment_model.pkl` in the appropriate directories
 
 ## Setup and Running
 
 1. **Clone the Repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/JNusink/sentiment-analysis-mlops-project.git
    cd sentiment-analysis-mlops
    ```
 
@@ -42,6 +42,8 @@ This project implements a multi-container MLOps application for sentiment analys
 5. **Test the API with curl**:
    ```bash
    curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d '{"text": "This movie was great!", "true_sentiment": "positive"}'
+   or invoke with PowerShell:
+   Invoke-WebRequest -Uri "http://localhost:8000/predict" -Method Post -Headers @{ "Content-Type" = "application/json"; "accept" = "application/json" } -Body '{"text": "This movie was great!", "true_sentiment": "positive"}' -UseBasicParsing
    ```
 
 6. **Run the Evaluation Script**:
@@ -80,11 +82,14 @@ sentiment-analysis-mlops/
 
 ## Notes
 
-- The FastAPI service logs each prediction with a timestamp, input text, predicted sentiment, and true sentiment.
-- The Streamlit dashboard displays:
-  - Data drift (sentence length distributions using IMDB Dataset.csv)
-  - Target drift (sentiment distributions)
-  - Model accuracy and precision, with an alert if accuracy < 80%
-- The evaluation script uses `test.json` to test the API and compute accuracy.
-- Ensure Docker is running before executing `make`.
-- Ensure `IMDB Dataset.csv` has columns `review` and `sentiment`.
+The FastAPI service logs each prediction with a timestamp, input text, predicted sentiment, and true sentiment to /logs/prediction_logs.json.
+The Streamlit dashboard displays:
+
+Data drift (sentence length distributions using IMDB Dataset.csv).
+Target drift (sentiment distributions).
+Model accuracy and precision, with an alert if accuracy < 80% (currently using fallback data).
+
+
+The evaluation script uses test.json to test the API and compute accuracy.
+Ensure Docker is running before executing make.
+Ensure IMDB Dataset.csv has columns review and sentiment, renamed to text and true_label in the dashboard.
